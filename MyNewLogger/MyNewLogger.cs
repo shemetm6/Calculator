@@ -46,8 +46,7 @@ namespace MyNewLogger
 
     public class CompositeLogger : ILogger
     {
-        private readonly IReadOnlyList<ILogger> _loggers; //IReadOnlyList<T> - интерфейс, который не позволит изменять свое содержимое.
-                                                          //private readonly не позволит нам переприсвоить ссылку в объект _loggers где-то за пределами конструктора. 
+        private readonly IReadOnlyList<ILogger> _loggers;
 
         public CompositeLogger (List<ILogger> loggers)
         {
