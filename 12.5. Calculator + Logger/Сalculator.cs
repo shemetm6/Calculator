@@ -60,7 +60,7 @@ class Calculator
     public double Multiply(double multiplier, double multiplier2)
     {
         double result = multiplier * multiplier2;
-        //Logger.LogInformation($"{multiplier} * {multiplier2} = {result}");
+        //Logger.LogInformation($"{multiplier} * {multiplier2} = {result}"); 
         return result;
     }
     public double DivideModulo(double dividend, double divider)
