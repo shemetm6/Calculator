@@ -22,16 +22,21 @@ namespace MyNewLogger
     }
     public class FileLogger : ILogger
     {
+        private string _path;
+        public FileLogger(string path)
+        {
+            _path = path;
+        }
         public void LogInformation(string message)
         {
-            using (StreamWriter writer = new StreamWriter("log.txt", true))
+            using (StreamWriter writer = new StreamWriter(_path, true))
             {
                 writer.WriteLine(message);
             }
         }
         public void LogError(Exception exception, string? additionalMessage = null)
         {
-            using (StreamWriter writer = new StreamWriter("log.txt", true)) 
+            using (StreamWriter writer = new StreamWriter(_path, true)) 
             {
                 writer.WriteLine(exception.Message);
                 if (additionalMessage != null) writer.WriteLine(additionalMessage);
@@ -41,9 +46,10 @@ namespace MyNewLogger
 
     public class CompositeLogger : ILogger
     {
-        List<ILogger> _loggers;
-        public ILogger Logger {  get; set; }
-        public CompositeLogger (params ILogger[] loggers)
+        private readonly IReadOnlyList<ILogger> _loggers; //IReadOnlyList<T> - интерфейс, который не позволит изменять свое содержимое.
+                                                          //private readonly не позволит нам переприсвоить ссылку в объект _loggers где-то за пределами конструктора.
+
+        public CompositeLogger (List<ILogger> loggers)
         {
             _loggers = new List<ILogger> (loggers);
         }
