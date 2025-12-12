@@ -50,7 +50,7 @@ namespace MyNewLogger
 
         public CompositeLogger (List<ILogger> loggers)
         {
-            _loggers = new List<ILogger> (loggers);
+            _loggers = loggers;
         }
         public void LogInformation(string message)
         {
