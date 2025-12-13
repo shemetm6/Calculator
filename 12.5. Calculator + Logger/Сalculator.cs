@@ -1,6 +1,7 @@
 ﻿using MyNewLogger;
 using System;
 
+bool isOpen = true;
 List<ILogger> loggers = new List<ILogger>() { new ConsoleLogger(), new FileLogger("log.txt") };
 CompositeLogger compositeLogger = new CompositeLogger(loggers);
 var operations = new Dictionary<string, Func<double, double, double>>
@@ -12,8 +13,8 @@ var operations = new Dictionary<string, Func<double, double, double>>
             {"%", Calculator.DivideModulo },
             {"^", Calculator.RaiseToPower }
         };
+
 UI.GetHelpInfo();
-bool isOpen = true;
 
 while (isOpen)
 {
@@ -22,13 +23,9 @@ while (isOpen)
         string userInput = Console.ReadLine().ToLower().Trim();
         UI.HandleInput(compositeLogger, operations, userInput, ref isOpen);
     }
-    catch
+    catch (Exception ex)
     {
-        //Если здесь ловить исключение и выводить+записывать через композитный логгер, то сообщение исключения продублируется.
-        //Получается надо убирать try catch из HandleInput.
-        //Но HandleInput создает переменные оператора и операндов, к которым я хочу иметь доступ, чтобы в лог записалось выражение: {operand1} {op} {operand2} = Error
-        //В противном случае в лог записывается только сам факт ошибки, а выражение нет
-        //Вообщем хотелось бы перенести сюда всё, что в HandleInput в блоке catch, но как это сделать я хуй знает
+        compositeLogger.LogError(ex);
     }
 }
 
@@ -47,7 +44,8 @@ static class Calculator
     public static double Divide(double dividend, double divider)
     {
         if (divider == 0)
-            throw new DivideByZeroException();
+            throw new DivideByZeroException($"Attempted to divide by zero.\n" +
+                $"{dividend} / {divider} = Error");
 
         return dividend / divider;
     }
@@ -59,10 +57,12 @@ static class Calculator
     public static double DivideModulo(double dividend, double divider)
     {
         if (divider == 0)
-            throw new DivideByZeroException();
+            throw new DivideByZeroException($"Attempted to divide by zero.\n" +
+                $"{dividend} % {divider} = Error");
 
         return dividend % divider;
     }
+
     public static double RaiseToPower(double baseOfThePower, double power)
     {
         return Math.Pow(baseOfThePower, power);
@@ -93,16 +93,9 @@ static class UI
             var operand1 = double.Parse(splittedInput[0]);
             var op = splittedInput[1];
             var operand2 = double.Parse(splittedInput[2]);
-            try
-            {
-                var result = operations[op](operand1, operand2);
-                compositeLogger.LogInformation($"{operand1} {op} {operand2} = {result}");
-            }
-            catch (Exception exception)
-            {
-                compositeLogger.LogError(exception, $"{operand1} {op} {operand2} = Error");
-                throw;
-            }
+
+            var result = operations[op](operand1, operand2);
+            compositeLogger.LogInformation($"{operand1} {op} {operand2} = {result}");
             return;
         }
         Console.WriteLine("Invalid input.");
